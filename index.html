@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskSphere // Premium Task Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-glow"></div>
+        <div class="splash-content">
+            <div class="splash-logo">
+                <i data-lucide="check-square" class="logo-icon animate-pulse"></i>
+                <h1>TaskSphere</h1>
+            </div>
+            <p class="splash-tagline">Organize your workflow. Elevate your productivity.</p>
+            <div class="splash-action">
+                <button id="enter-btn" class="enter-btn">
+                    <span>Enter Workspace</span>
+                    <i data-lucide="arrow-right"></i>
+                </button>
+                <div class="keyboard-hint">
+                    <span>or press</span>
+                    <kbd>Enter</kbd>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workspace Dashboard (initially hidden or blurred) -->
+    <div id="app-container" class="app-container hidden">
+        <aside class="sidebar">
+            <div class="brand">
+                <i data-lucide="check-square" class="brand-logo"></i>
+                <h2>TaskSphere</h2>
+            </div>
+            
+            <div class="stats-panel">
+                <h3>Workspace Progress</h3>
+                <div class="progress-ring-container">
+                    <svg class="progress-ring" width="120" height="120">
+                        <circle class="progress-ring__circle-bg" stroke="rgba(255, 255, 255, 0.05)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                        <circle class="progress-ring__circle" stroke="url(#progress-grad)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                        <defs>
+                            <linearGradient id="progress-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#6366f1" />
+                                <stop offset="100%" stop-color="#a855f7" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="progress-text">
+                        <span id="completion-percentage">0%</span>
+                        <small>Completed</small>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-num" id="stat-total">0</span>
+                        <span class="stat-label">Total</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-num" id="stat-pending">0</span>
+                        <span class="stat-label">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="filters-nav">
+                <h3>Filters</h3>
+                <button class="filter-btn active" data-filter="all">
+                    <i data-lucide="layers"></i>
+                    <span>All Tasks</span>
+                </button>
+                <button class="filter-btn" data-filter="work">
+                    <i data-lucide="briefcase"></i>
+                    <span>Work</span>
+                </button>
+                <button class="filter-btn" data-filter="personal">
+                    <i data-lucide="user"></i>
+                    <span>Personal</span>
+                </button>
+                <button class="filter-btn" data-filter="shopping">
+                    <i data-lucide="shopping-bag"></i>
+                    <span>Shopping</span>
+                </button>
+                <button class="filter-btn" data-filter="health">
+                    <i data-lucide="heart"></i>
+                    <span>Health</span>
+                </button>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-title">
+                    <h1 id="greeting">Welcome Back</h1>
+                    <p id="current-date">Saturday, July 4</p>
+                </div>
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="search-input" placeholder="Search tasks...">
+                    </div>
+                    <button id="add-task-btn" class="btn btn-primary">
+                        <i data-lucide="plus"></i>
+                        <span>New Task</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Kanban Board Columns -->
+            <div class="board-columns">
+                <!-- Column: To Do -->
+                <div class="board-column" data-status="todo">
+                    <div class="column-header">
+                        <span class="status-indicator status-todo"></span>
+                        <h2>To Do</h2>
+                        <span class="task-count" id="count-todo">0</span>
+                    </div>
+                    <div class="task-list" id="list-todo">
+                        <!-- Tasks go here -->
+                    </div>
+                </div>
+
+                <!-- Column: In Progress -->
+                <div class="board-column" data-status="in-progress">
+                    <div class="column-header">
+                        <span class="status-indicator status-progress"></span>
+                        <h2>In Progress</h2>
+                        <span class="task-count" id="count-progress">0</span>
+                    </div>
+                    <div class="task-list" id="list-in-progress">
+                        <!-- Tasks go here -->
+                    </div>
+                </div>
+
+                <!-- Column: Completed -->
+                <div class="board-column" data-status="done">
+                    <div class="column-header">
+                        <span class="status-indicator status-done"></span>
+                        <h2>Completed</h2>
+                        <span class="task-count" id="count-done">0</span>
+                    </div>
+                    <div class="task-list" id="list-done">
+                        <!-- Tasks go here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Task Creation / Editing -->
+    <div id="task-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Create Task</h2>
+                <button class="close-modal-btn" id="close-modal"><i data-lucide="x"></i></button>
+            </div>
+            <form id="task-form">
+                <input type="hidden" id="task-id">
+                <div class="form-group">
+                    <label for="task-title-input">Title</label>
+                    <input type="text" id="task-title-input" placeholder="What needs to be done?" required autocomplete="off">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-category">Category</label>
+                        <select id="task-category">
+                            <option value="work">Work</option>
+                            <option value="personal">Personal</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="health">Health</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-priority">Priority</label>
+                        <select id="task-priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="task-due-date">Due Date</label>
+                    <input type="date" id="task-due-date">
+                </div>
+                <div class="form-group">
+                    <label for="task-desc">Description</label>
+                    <textarea id="task-desc" rows="3" placeholder="Add details..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-task">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
