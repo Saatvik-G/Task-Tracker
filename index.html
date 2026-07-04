@@ -7,113 +7,78 @@
     <meta name="description" content="A simple task tracker anyone can use. Add tasks, set deadlines, track progress. No sign-up needed.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Welcome screen (first visit only) -->
+    <!-- Welcome screen (first visit) -->
     <div id="welcome-screen" class="welcome-screen">
         <div class="welcome-card">
-            <div class="welcome-emoji">📋</div>
-            <h1>Hey there!</h1>
-            <p>Welcome to <strong>TaskFlow</strong> — a simple way to keep track of your tasks, deadlines and progress.</p>
-            <p class="welcome-sub">What should we call you?</p>
-            <div class="welcome-input-row">
-                <input type="text" id="welcome-name" placeholder="Your name" maxlength="30" autocomplete="off">
-                <button id="welcome-go-btn" class="btn btn-primary">Let's go →</button>
+            <div class="welcome-icon">&#9889;</div>
+            <h1>Welcome to TaskFlow</h1>
+            <p>A quick way to keep track of what you need to get done. Your tasks are saved right here in your browser — no account needed.</p>
+            <div class="welcome-form">
+                <label for="welcome-name">What's your name?</label>
+                <div class="welcome-input-row">
+                    <input type="text" id="welcome-name" placeholder="e.g. Rahul" maxlength="30" autocomplete="off">
+                    <button id="welcome-go-btn" class="btn btn-accent">Let's go</button>
+                </div>
             </div>
-            <p class="welcome-note">Your tasks are saved in this browser. No account needed.</p>
         </div>
     </div>
 
-    <!-- Main app (hidden until welcome is done) -->
-    <div id="app-container" class="app-layout" style="display:none;">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="brand">
-                <span class="brand-icon">📋</span>
-                <div>
-                    <h2>TaskFlow</h2>
-                    <p class="brand-sub">Your task tracker</p>
+    <!-- Main app -->
+    <div id="app-container" class="app-wrapper" style="display:none;">
+
+        <!-- Top bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <span class="topbar-logo">&#9889;</span>
+                <span class="topbar-brand">TaskFlow</span>
+            </div>
+            <div class="topbar-right">
+                <span class="topbar-user" id="topbar-user">User</span>
+                <button id="change-name-btn" class="icon-btn" title="Change name">&#9998;</button>
+                <button id="clear-data-btn" class="icon-btn danger" title="Clear all data">&#128465;</button>
+            </div>
+        </header>
+
+        <!-- Greeting + stats row -->
+        <section class="hero-section">
+            <div class="hero-greeting">
+                <h1 id="greeting">Good evening!</h1>
+                <p id="current-date"></p>
+            </div>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <span class="stat-number" id="stat-total">0</span>
+                    <span class="stat-name">Total</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="stat-active">0</span>
+                    <span class="stat-name">Active</span>
+                </div>
+                <div class="stat-card accent">
+                    <span class="stat-number" id="stat-done-pct">0%</span>
+                    <span class="stat-name">Done</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="stat-overdue">0</span>
+                    <span class="stat-name">Overdue</span>
                 </div>
             </div>
+        </section>
 
-            <!-- Progress -->
-            <div class="stats-panel">
-                <h3>Your Progress</h3>
-                <div class="progress-ring-container">
-                    <svg class="progress-ring" width="110" height="110">
-                        <circle class="progress-ring__circle-bg" stroke-width="8" fill="transparent" r="46" cx="55" cy="55"/>
-                        <circle class="progress-ring__circle" stroke="url(#pg)" stroke-width="8" fill="transparent" r="46" cx="55" cy="55"/>
-                        <defs>
-                            <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#38b2ac" />
-                                <stop offset="100%" stop-color="#4fd1c5" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <div class="progress-text">
-                        <span id="completion-percentage">0%</span>
-                        <small>done</small>
-                    </div>
+        <!-- Controls row: search + category chips + date filter + add button -->
+        <section class="controls-section">
+            <div class="controls-top">
+                <div class="search-box">
+                    <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="search-input" placeholder="Search tasks...">
                 </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-num" id="stat-total">0</span>
-                        <span class="stat-label">Total</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-num" id="stat-pending">0</span>
-                        <span class="stat-label">Active</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Category Filters -->
-            <nav class="filters-nav">
-                <h3>Categories</h3>
-                <button class="filter-btn active" data-filter="all">📋 All Tasks</button>
-                <button class="filter-btn" data-filter="study">📚 Study</button>
-                <button class="filter-btn" data-filter="assignment">📝 Assignment</button>
-                <button class="filter-btn" data-filter="work">💼 Work</button>
-                <button class="filter-btn" data-filter="personal">🏠 Personal</button>
-                <button class="filter-btn" data-filter="health">❤️ Health</button>
-                <button class="filter-btn" data-filter="other">📌 Other</button>
-            </nav>
-
-            <!-- User info & footer -->
-            <div class="sidebar-footer">
-                <p>Logged in as <strong id="sidebar-username">User</strong></p>
-                <div class="sidebar-links">
-                    <button id="change-name-btn" class="link-btn">Change name</button>
-                    <span class="link-sep">·</span>
-                    <button id="clear-data-btn" class="link-btn danger">Clear all data</button>
-                </div>
-                <hr class="footer-divider">
-                <p class="project-note">Built by Saatvik Gupta · <a href="https://github.com/Saatvik-G/Task-Tracker" target="_blank">GitHub</a></p>
-                <p class="project-note">Web Tech Project · July 2026</p>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="main-header">
-                <div class="header-title">
-                    <h1 id="greeting">My Tasks</h1>
-                    <p id="current-date"></p>
-                </div>
-                <div class="header-actions">
-                    <!-- Search -->
-                    <div class="search-bar">
-                        <svg class="search-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                        <input type="text" id="search-input" placeholder="Search tasks...">
-                    </div>
-                    <!-- Date filter -->
-                    <div class="date-filter-group">
+                <div class="controls-right-group">
+                    <div class="date-filter-wrap">
                         <label for="date-filter">Due:</label>
                         <select id="date-filter">
                             <option value="all">Any date</option>
@@ -122,43 +87,39 @@
                             <option value="overdue">Overdue</option>
                         </select>
                     </div>
-                    <button id="add-task-btn" class="btn btn-primary">+ Add Task</button>
-                </div>
-            </header>
-
-            <!-- Board Columns -->
-            <div class="board-columns">
-                <!-- To Do -->
-                <div class="board-column col-todo">
-                    <div class="column-header">
-                        <span class="dot dot-todo"></span>
-                        <h2>To Do</h2>
-                        <span class="task-count" id="count-todo">0</span>
-                    </div>
-                    <div class="task-list" id="list-todo"></div>
-                </div>
-
-                <!-- In Progress -->
-                <div class="board-column col-progress">
-                    <div class="column-header">
-                        <span class="dot dot-progress"></span>
-                        <h2>In Progress</h2>
-                        <span class="task-count" id="count-progress">0</span>
-                    </div>
-                    <div class="task-list" id="list-in-progress"></div>
-                </div>
-
-                <!-- Done -->
-                <div class="board-column col-done">
-                    <div class="column-header">
-                        <span class="dot dot-done"></span>
-                        <h2>Done</h2>
-                        <span class="task-count" id="count-done">0</span>
-                    </div>
-                    <div class="task-list" id="list-done"></div>
+                    <button id="add-task-btn" class="btn btn-accent">+ New Task</button>
                 </div>
             </div>
-        </main>
+            <div class="category-chips" id="category-chips">
+                <button class="chip active" data-filter="all">All</button>
+                <button class="chip" data-filter="study">&#128218; Study</button>
+                <button class="chip" data-filter="assignment">&#128221; Assignment</button>
+                <button class="chip" data-filter="work">&#128188; Work</button>
+                <button class="chip" data-filter="personal">&#127968; Personal</button>
+                <button class="chip" data-filter="health">&#10084;&#65039; Health</button>
+                <button class="chip" data-filter="other">&#128204; Other</button>
+            </div>
+        </section>
+
+        <!-- Status tabs -->
+        <section class="tabs-section">
+            <div class="tabs">
+                <button class="tab active" data-tab="all">All <span class="tab-count" id="tab-count-all">0</span></button>
+                <button class="tab" data-tab="todo">To Do <span class="tab-count" id="tab-count-todo">0</span></button>
+                <button class="tab" data-tab="in-progress">In Progress <span class="tab-count" id="tab-count-progress">0</span></button>
+                <button class="tab" data-tab="done">Done <span class="tab-count" id="tab-count-done">0</span></button>
+            </div>
+        </section>
+
+        <!-- Task list -->
+        <section class="task-section">
+            <div id="task-list" class="task-list"></div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Built by <strong>Saatvik Gupta</strong> &middot; <a href="https://github.com/Saatvik-G/Task-Tracker" target="_blank">GitHub</a> &middot; Web Tech Project, July 2026</p>
+        </footer>
     </div>
 
     <!-- Add / Edit Task Modal -->
@@ -167,24 +128,24 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modal-title">Add Task</h2>
-                <button class="close-modal-btn" id="close-modal">✕</button>
+                <button class="close-modal-btn" id="close-modal">&times;</button>
             </div>
             <form id="task-form">
                 <input type="hidden" id="task-id">
                 <div class="form-group">
                     <label for="task-title-input">Task title *</label>
-                    <input type="text" id="task-title-input" placeholder="e.g. Finish assignment 3" required autocomplete="off">
+                    <input type="text" id="task-title-input" placeholder="e.g. Finish chapter 5 notes" required autocomplete="off">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="task-category">Category</label>
                         <select id="task-category">
-                            <option value="study">📚 Study</option>
-                            <option value="assignment">📝 Assignment</option>
-                            <option value="work">💼 Work</option>
-                            <option value="personal">🏠 Personal</option>
-                            <option value="health">❤️ Health</option>
-                            <option value="other">📌 Other</option>
+                            <option value="study">&#128218; Study</option>
+                            <option value="assignment">&#128221; Assignment</option>
+                            <option value="work">&#128188; Work</option>
+                            <option value="personal">&#127968; Personal</option>
+                            <option value="health">&#10084;&#65039; Health</option>
+                            <option value="other">&#128204; Other</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -205,8 +166,8 @@
                     <textarea id="task-desc" rows="3" placeholder="Any extra details..."></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="cancel-task">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Task</button>
+                    <button type="button" class="btn btn-ghost" id="cancel-task">Cancel</button>
+                    <button type="submit" class="btn btn-accent">Save Task</button>
                 </div>
             </form>
         </div>
