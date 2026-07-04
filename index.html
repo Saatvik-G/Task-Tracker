@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow — Task Tracker</title>
-    <meta name="description" content="A clean, simple task tracker. Add tasks, set deadlines, track progress.">
+    <title>TaskFlow — Track Your Tasks</title>
+    <meta name="description" content="A simple task tracker anyone can use. Add tasks, set deadlines, track progress. No sign-up needed.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,28 +12,44 @@
 </head>
 <body>
 
-    <div class="app-layout">
+    <!-- Welcome screen (first visit only) -->
+    <div id="welcome-screen" class="welcome-screen">
+        <div class="welcome-card">
+            <div class="welcome-emoji">📋</div>
+            <h1>Hey there!</h1>
+            <p>Welcome to <strong>TaskFlow</strong> — a simple way to keep track of your tasks, deadlines and progress.</p>
+            <p class="welcome-sub">What should we call you?</p>
+            <div class="welcome-input-row">
+                <input type="text" id="welcome-name" placeholder="Your name" maxlength="30" autocomplete="off">
+                <button id="welcome-go-btn" class="btn btn-primary">Let's go →</button>
+            </div>
+            <p class="welcome-note">Your tasks are saved in this browser. No account needed.</p>
+        </div>
+    </div>
+
+    <!-- Main app (hidden until welcome is done) -->
+    <div id="app-container" class="app-layout" style="display:none;">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="brand">
-                <span class="brand-icon">✅</span>
+                <span class="brand-icon">📋</span>
                 <div>
                     <h2>TaskFlow</h2>
-                    <p class="brand-sub">Task tracker</p>
+                    <p class="brand-sub">Your task tracker</p>
                 </div>
             </div>
 
             <!-- Progress -->
             <div class="stats-panel">
-                <h3>My Progress</h3>
+                <h3>Your Progress</h3>
                 <div class="progress-ring-container">
                     <svg class="progress-ring" width="110" height="110">
-                        <circle class="progress-ring__circle-bg" stroke="#2d3142" stroke-width="8" fill="transparent" r="46" cx="55" cy="55"/>
+                        <circle class="progress-ring__circle-bg" stroke-width="8" fill="transparent" r="46" cx="55" cy="55"/>
                         <circle class="progress-ring__circle" stroke="url(#pg)" stroke-width="8" fill="transparent" r="46" cx="55" cy="55"/>
                         <defs>
                             <linearGradient id="pg" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#6366f1" />
-                                <stop offset="100%" stop-color="#a78bfa" />
+                                <stop offset="0%" stop-color="#38b2ac" />
+                                <stop offset="100%" stop-color="#4fd1c5" />
                             </linearGradient>
                         </defs>
                     </svg>
@@ -56,20 +72,26 @@
 
             <!-- Category Filters -->
             <nav class="filters-nav">
-                <h3>Filter by Category</h3>
+                <h3>Categories</h3>
                 <button class="filter-btn active" data-filter="all">📋 All Tasks</button>
                 <button class="filter-btn" data-filter="study">📚 Study</button>
                 <button class="filter-btn" data-filter="assignment">📝 Assignment</button>
+                <button class="filter-btn" data-filter="work">💼 Work</button>
                 <button class="filter-btn" data-filter="personal">🏠 Personal</button>
                 <button class="filter-btn" data-filter="health">❤️ Health</button>
-                <button class="filter-btn" data-filter="work">💼 Work</button>
                 <button class="filter-btn" data-filter="other">📌 Other</button>
             </nav>
 
-            <!-- Footer byline -->
+            <!-- User info & footer -->
             <div class="sidebar-footer">
-                <p>Built by <strong>Saatvik Gupta</strong></p>
-                <a href="https://github.com/Saatvik-G/Task-Tracker" target="_blank">GitHub ↗</a>
+                <p>Logged in as <strong id="sidebar-username">User</strong></p>
+                <div class="sidebar-links">
+                    <button id="change-name-btn" class="link-btn">Change name</button>
+                    <span class="link-sep">·</span>
+                    <button id="clear-data-btn" class="link-btn danger">Clear all data</button>
+                </div>
+                <hr class="footer-divider">
+                <p class="project-note">Built by Saatvik Gupta · <a href="https://github.com/Saatvik-G/Task-Tracker" target="_blank">GitHub</a></p>
                 <p class="project-note">Web Tech Project · July 2026</p>
             </div>
         </aside>
@@ -84,7 +106,10 @@
                 <div class="header-actions">
                     <!-- Search -->
                     <div class="search-bar">
-                        <span class="search-icon">🔍</span>
+                        <svg class="search-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
                         <input type="text" id="search-input" placeholder="Search tasks...">
                     </div>
                     <!-- Date filter -->
@@ -104,45 +129,33 @@
             <!-- Board Columns -->
             <div class="board-columns">
                 <!-- To Do -->
-                <div class="board-column">
+                <div class="board-column col-todo">
                     <div class="column-header">
                         <span class="dot dot-todo"></span>
                         <h2>To Do</h2>
                         <span class="task-count" id="count-todo">0</span>
                     </div>
-                    <div class="task-list" id="list-todo">
-                        <div class="empty-state" id="empty-todo">
-                            No tasks yet — add your first one 👆
-                        </div>
-                    </div>
+                    <div class="task-list" id="list-todo"></div>
                 </div>
 
                 <!-- In Progress -->
-                <div class="board-column">
+                <div class="board-column col-progress">
                     <div class="column-header">
                         <span class="dot dot-progress"></span>
                         <h2>In Progress</h2>
                         <span class="task-count" id="count-progress">0</span>
                     </div>
-                    <div class="task-list" id="list-in-progress">
-                        <div class="empty-state" id="empty-progress">
-                            Nothing in progress yet
-                        </div>
-                    </div>
+                    <div class="task-list" id="list-in-progress"></div>
                 </div>
 
                 <!-- Done -->
-                <div class="board-column">
+                <div class="board-column col-done">
                     <div class="column-header">
                         <span class="dot dot-done"></span>
                         <h2>Done</h2>
                         <span class="task-count" id="count-done">0</span>
                     </div>
-                    <div class="task-list" id="list-done">
-                        <div class="empty-state" id="empty-done">
-                            Completed tasks show up here
-                        </div>
-                    </div>
+                    <div class="task-list" id="list-done"></div>
                 </div>
             </div>
         </main>
@@ -168,9 +181,9 @@
                         <select id="task-category">
                             <option value="study">📚 Study</option>
                             <option value="assignment">📝 Assignment</option>
+                            <option value="work">💼 Work</option>
                             <option value="personal">🏠 Personal</option>
                             <option value="health">❤️ Health</option>
-                            <option value="work">💼 Work</option>
                             <option value="other">📌 Other</option>
                         </select>
                     </div>
