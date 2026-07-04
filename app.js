@@ -56,6 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
         progressCircle.style.strokeDashoffset = circumference;
     }
 
+    const splashAction = document.querySelector('.splash-action');
+    const splashLoaderContainer = document.getElementById('splash-loader-container');
+    const loaderStatus = document.getElementById('loader-status');
+    const loaderBar = document.getElementById('loader-bar');
+
     // Set greeting and date
     function updateHeaderInfo() {
         const now = new Date();
@@ -72,14 +77,46 @@ document.addEventListener('DOMContentLoaded', () => {
     updateHeaderInfo();
 
     // Splash Screen Transition Trigger
+    let isEntering = false;
     function enterWorkspace() {
-        if (!splashScreen.classList.contains('fade-out')) {
-            splashScreen.classList.add('fade-out');
-            appContainer.classList.remove('hidden');
-            setTimeout(() => {
-                splashScreen.style.display = 'none';
-            }, 600);
-        }
+        if (isEntering || splashScreen.classList.contains('fade-out')) return;
+        isEntering = true;
+
+        // Hide buttons, show loader
+        splashAction.classList.add('hidden');
+        splashLoaderContainer.classList.remove('hidden');
+
+        let progress = 0;
+        const statuses = [
+            { limit: 25, text: 'Syncing workspace...' },
+            { limit: 55, text: 'Optimizing board columns...' },
+            { limit: 85, text: 'Retrieving saved tasks...' },
+            { limit: 100, text: 'Ready! Launching...' }
+        ];
+
+        const interval = setInterval(() => {
+            progress += Math.floor(Math.random() * 8) + 4;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                
+                // Finalize entry
+                loaderBar.style.width = '100%';
+                loaderStatus.textContent = statuses[3].text;
+                
+                setTimeout(() => {
+                    splashScreen.classList.add('fade-out');
+                    appContainer.classList.remove('hidden');
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                    }, 600);
+                }, 400);
+            } else {
+                loaderBar.style.width = `${progress}%`;
+                const currentStatus = statuses.find(s => progress <= s.limit) || statuses[2];
+                loaderStatus.textContent = currentStatus.text;
+            }
+        }, 80);
     }
 
     enterBtn.addEventListener('click', enterWorkspace);
