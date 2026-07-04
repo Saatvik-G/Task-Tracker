@@ -1,4 +1,4 @@
-// Saat's Task Tracker - app.js
+// TaskFlow - app.js
 // Web Tech Project, July 2026
 // Built by Saatvik Gupta
 
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
     progressCircle.style.strokeDashoffset = circumference;
 
     // load tasks from localStorage (or start empty)
-    var tasks = JSON.parse(localStorage.getItem('saatTasks')) || [];
+    var tasks = JSON.parse(localStorage.getItem('taskflow_tasks')) || [];
 
     // currently active filters
     var currentCategory = 'all';
@@ -62,10 +62,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function setGreeting() {
         var now = new Date();
         var h = now.getHours();
-        var name = 'Saatvik';
-        var greeting = 'Good evening, ' + name;
-        if (h < 12) greeting = 'Good morning, ' + name;
-        else if (h < 18) greeting = 'Good afternoon, ' + name;
+        var greeting = 'Good evening!';
+        if (h < 12) greeting = 'Good morning!';
+        else if (h < 18) greeting = 'Good afternoon!';
         greetingEl.textContent = greeting;
 
         var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -76,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // save to localStorage
     function saveTasks() {
-        localStorage.setItem('saatTasks', JSON.stringify(tasks));
+        localStorage.setItem('taskflow_tasks', JSON.stringify(tasks));
     }
 
     // update the circular progress ring
@@ -158,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // category emoji helper
     function getCategoryEmoji(cat) {
-        var map = { study: '📚', assignment: '📝', personal: '🏠', health: '❤️' };
+        var map = { study: '📚', assignment: '📝', personal: '🏠', health: '❤️', work: '💼', other: '📌' };
         return map[cat] || '📋';
     }
 

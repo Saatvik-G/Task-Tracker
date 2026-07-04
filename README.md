@@ -1,6 +1,6 @@
-# Saat's Task Tracker
+# TaskFlow — Task Tracker
 
-A personal task management board I built for my Web Technology course project. Lets me add tasks with deadlines and priorities, track them across three stages, and see how much I've knocked out.
+A task board built for my Web Technology course project. Anyone can use it to add tasks with deadlines and priorities, track them across three stages, and see their progress at a glance. No login needed — each user's browser stores their own tasks locally.
 
 **Live site:** [saatvik-g.github.io/Task-Tracker](https://saatvik-g.github.io/Task-Tracker/)
 
