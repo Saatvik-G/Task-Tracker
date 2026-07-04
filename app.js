@@ -43,6 +43,89 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const filterButtons = document.querySelectorAll('.filter-btn');
 
+    // Canvas Particle System
+    const canvas = document.getElementById('splash-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const colors = ['#6366f1', '#a855f7', '#38bdf8', '#c084fc', '#818cf8'];
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+        constructor(x, y, color, size, vx, vy) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.size = size || Math.random() * 3 + 1.5;
+            this.vx = vx || (Math.random() - 0.5) * 4;
+            this.vy = vy || (Math.random() - 0.5) * 4;
+            this.alpha = 1;
+            this.decay = Math.random() * 0.02 + 0.015;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.vx *= 0.97;
+            this.vy *= 0.97;
+            this.alpha -= this.decay;
+        }
+        draw() {
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = this.color;
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    function createBurst(x, y, count = 30) {
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 5 + 1.5;
+            const vx = Math.cos(angle) * speed;
+            const vy = Math.sin(angle) * speed;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const size = Math.random() * 2 + 1.5;
+            particles.push(new Particle(x, y, color, size, vx, vy));
+        }
+    }
+
+    function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles = particles.filter(p => p.alpha > 0);
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+        requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // Listeners for Particle Bursts
+    splashScreen.addEventListener('mousedown', (e) => {
+        createBurst(e.clientX, e.clientY, 25);
+    });
+
+    const logoContainer = document.getElementById('logo-container');
+    if (logoContainer) {
+        logoContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const rect = logoContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            createBurst(centerX, centerY, 55);
+        });
+    }
+
     // App State
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
     let currentFilter = 'all';
