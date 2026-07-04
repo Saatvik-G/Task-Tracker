@@ -1,426 +1,372 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Lucide Icons
-    lucide.createIcons();
+// Saat's Task Tracker - app.js
+// Web Tech Project, July 2026
+// Built by Saatvik Gupta
 
-    // Elements
-    const splashScreen = document.getElementById('splash-screen');
-    const enterBtn = document.getElementById('enter-btn');
-    const appContainer = document.getElementById('app-container');
-    const greetingEl = document.getElementById('greeting');
-    const currentDateEl = document.getElementById('current-date');
-    
-    // Task elements
-    const addTaskBtn = document.getElementById('add-task-btn');
-    const taskModal = document.getElementById('task-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const cancelTaskBtn = document.getElementById('cancel-task');
-    const taskForm = document.getElementById('task-form');
-    const modalTitle = document.getElementById('modal-title');
-    
-    // Form fields
-    const taskIdInput = document.getElementById('task-id');
-    const taskTitleInput = document.getElementById('task-title-input');
-    const taskCategorySelect = document.getElementById('task-category');
-    const taskPrioritySelect = document.getElementById('task-priority');
-    const taskDueDateInput = document.getElementById('task-due-date');
-    const taskDescInput = document.getElementById('task-desc');
-    
-    // Lists
-    const listTodo = document.getElementById('list-todo');
-    const listInProgress = document.getElementById('list-in-progress');
-    const listDone = document.getElementById('list-done');
-    
-    // Counts & Stats
-    const countTodoEl = document.getElementById('count-todo');
-    const countProgressEl = document.getElementById('count-progress');
-    const countDoneEl = document.getElementById('count-done');
-    const statTotalEl = document.getElementById('stat-total');
-    const statPendingEl = document.getElementById('stat-pending');
-    const completionPercentageEl = document.getElementById('completion-percentage');
-    const progressCircle = document.querySelector('.progress-ring__circle');
-    
-    // Controls
-    const searchInput = document.getElementById('search-input');
-    const filterButtons = document.querySelectorAll('.filter-btn');
+document.addEventListener('DOMContentLoaded', function() {
 
-    // Canvas Background & Click Animation (Student style)
-    var canvas = document.getElementById('splash-canvas');
-    var ctx = canvas.getContext('2d');
-    var particles = [];
-    var backgroundDots = [];
-    var colors = ['#6366f1', '#a855f7', '#38bdf8', '#c084fc', '#818cf8'];
+    // grab all the DOM elements I need
+    var greetingEl = document.getElementById('greeting');
+    var currentDateEl = document.getElementById('current-date');
+    var addTaskBtn = document.getElementById('add-task-btn');
+    var taskModal = document.getElementById('task-modal');
+    var closeModalBtn = document.getElementById('close-modal');
+    var cancelTaskBtn = document.getElementById('cancel-task');
+    var taskForm = document.getElementById('task-form');
+    var modalTitle = document.getElementById('modal-title');
+    var modalBackdrop = document.getElementById('modal-backdrop');
 
-    // Resize canvas
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    // form fields
+    var taskIdInput = document.getElementById('task-id');
+    var taskTitleInput = document.getElementById('task-title-input');
+    var taskCategorySelect = document.getElementById('task-category');
+    var taskPrioritySelect = document.getElementById('task-priority');
+    var taskDueDateInput = document.getElementById('task-due-date');
+    var taskDescInput = document.getElementById('task-desc');
+
+    // board columns
+    var listTodo = document.getElementById('list-todo');
+    var listInProgress = document.getElementById('list-in-progress');
+    var listDone = document.getElementById('list-done');
+
+    // count badges
+    var countTodoEl = document.getElementById('count-todo');
+    var countProgressEl = document.getElementById('count-progress');
+    var countDoneEl = document.getElementById('count-done');
+
+    // stats
+    var statTotalEl = document.getElementById('stat-total');
+    var statPendingEl = document.getElementById('stat-pending');
+    var completionPercentageEl = document.getElementById('completion-percentage');
+    var progressCircle = document.querySelector('.progress-ring__circle');
+
+    // filters
+    var searchInput = document.getElementById('search-input');
+    var filterButtons = document.querySelectorAll('.filter-btn');
+    var dateFilterSelect = document.getElementById('date-filter');
+
+    // set up the SVG progress circle
+    var radius = 46;
+    var circumference = 2 * Math.PI * radius;
+    progressCircle.style.strokeDasharray = circumference + ' ' + circumference;
+    progressCircle.style.strokeDashoffset = circumference;
+
+    // load tasks from localStorage (or start empty)
+    var tasks = JSON.parse(localStorage.getItem('saatTasks')) || [];
+
+    // currently active filters
+    var currentCategory = 'all';
+    var currentDateFilter = 'all';
+    var currentSearch = '';
+
+    // set greeting and date
+    function setGreeting() {
+        var now = new Date();
+        var h = now.getHours();
+        var name = 'Saatvik';
+        var greeting = 'Good evening, ' + name;
+        if (h < 12) greeting = 'Good morning, ' + name;
+        else if (h < 18) greeting = 'Good afternoon, ' + name;
+        greetingEl.textContent = greeting;
+
+        var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        currentDateEl.textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
     }
-    resize();
-    window.addEventListener('resize', resize);
+    setGreeting();
 
-    // Populate some moving background stars/dots initially
-    for (var i = 0; i < 40; i++) {
-        backgroundDots.push({
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-            size: Math.random() * 2 + 1,
-            speedY: -(Math.random() * 0.5 + 0.2),
-            alpha: Math.random() * 0.5 + 0.2
-        });
-    }
-
-    // Function to draw and move everything
-    function drawSplash() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw background moving stars
-        for (var i = 0; i < backgroundDots.length; i++) {
-            var dot = backgroundDots[i];
-            dot.y += dot.speedY;
-            if (dot.y < 0) {
-                dot.y = canvas.height;
-                dot.x = Math.random() * canvas.width;
-            }
-            ctx.fillStyle = 'rgba(168, 85, 247, ' + dot.alpha + ')';
-            ctx.beginPath();
-            ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        // Draw and update explosion particles
-        for (var j = 0; j < particles.length; j++) {
-            var p = particles[j];
-            p.x += p.vx;
-            p.y += p.vy;
-            p.alpha -= 0.02; // fade out
-            
-            if (p.alpha > 0) {
-                ctx.fillStyle = p.color;
-                ctx.globalAlpha = p.alpha;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.globalAlpha = 1.0; // reset
-            }
-        }
-
-        // Filter out dead particles
-        particles = particles.filter(function(item) {
-            return item.alpha > 0;
-        });
-
-        requestAnimationFrame(drawSplash);
-    }
-    drawSplash();
-
-    // Spawn particle burst function
-    function doBurst(x, y) {
-        for (var i = 0; i < 30; i++) {
-            var angle = Math.random() * Math.PI * 2;
-            var speed = Math.random() * 4 + 1;
-            particles.push({
-                x: x,
-                y: y,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                size: Math.random() * 3 + 1,
-                color: colors[Math.floor(Math.random() * colors.length)],
-                alpha: 1.0
-            });
-        }
-    }
-
-    // Single trigger to enter workspace (with animation fadeout)
-    var isEntering = false;
-    function enterWorkspace(clickX, clickY) {
-        if (isEntering) return;
-        isEntering = true;
-
-        // If no coordinates provided, use screen center
-        var targetX = clickX || window.innerWidth / 2;
-        var targetY = clickY || window.innerHeight / 2;
-
-        // Trigger explosion
-        doBurst(targetX, targetY);
-
-        // Hide enter button area
-        var splashAction = document.querySelector('.splash-action');
-        if (splashAction) {
-            splashAction.classList.add('hidden');
-        }
-
-        // Wait a split second, then fade out the splash screen and show dashboard
-        setTimeout(function() {
-            splashScreen.classList.add('fade-out');
-            appContainer.classList.remove('hidden');
-            setTimeout(function() {
-                splashScreen.style.display = 'none';
-            }, 600);
-        }, 500);
-    }
-
-    // Click anywhere on splash screen to trigger animation and enter
-    splashScreen.addEventListener('mousedown', function(e) {
-        enterWorkspace(e.clientX, e.clientY);
-    });
-
-    // Logo click (specifically runs animation)
-    var logoContainer = document.getElementById('logo-container');
-    if (logoContainer) {
-        logoContainer.addEventListener('click', function(e) {
-            e.stopPropagation(); // prevent double trigger
-            var rect = logoContainer.getBoundingClientRect();
-            var cx = rect.left + rect.width / 2;
-            var cy = rect.top + rect.height / 2;
-            enterWorkspace(cx, cy);
-        });
-    }
-
-    // Enter key press triggers workspace entry
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            enterWorkspace();
-        }
-    });
-
-    // App State
-    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    let currentFilter = 'all';
-    let searchQuery = '';
-
-    // Circular progress configurations
-    if (progressCircle) {
-        const radius = progressCircle.r.baseVal.value;
-        const circumference = radius * 2 * Math.PI;
-        progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-        progressCircle.style.strokeDashoffset = circumference;
-    }
-
-    // Set greeting and date
-    function updateHeaderInfo() {
-        const now = new Date();
-        const hours = now.getHours();
-        let greeting = 'Good Evening';
-        if (hours < 12) greeting = 'Good Morning';
-        else if (hours < 18) greeting = 'Good Afternoon';
-        
-        greetingEl.textContent = `${greeting}, Developer`;
-        
-        const options = { weekday: 'long', month: 'long', day: 'numeric' };
-        currentDateEl.textContent = now.toLocaleDateString('en-US', options);
-    }
-    updateHeaderInfo();
-
-    // Save tasks to local storage
+    // save to localStorage
     function saveTasks() {
-        localStorage.setItem('tasks', JSON.stringify(tasks));
+        localStorage.setItem('saatTasks', JSON.stringify(tasks));
     }
 
-    // Calculate and update workspace progress stats
+    // update the circular progress ring
+    function updateProgressRing(percent) {
+        var offset = circumference - (percent / 100) * circumference;
+        progressCircle.style.strokeDashoffset = offset;
+    }
+
+    // update the stats numbers in sidebar
     function updateStats() {
-        const total = tasks.length;
-        const todo = tasks.filter(t => t.status === 'todo').length;
-        const progress = tasks.filter(t => t.status === 'in-progress').length;
-        const done = tasks.filter(t => t.status === 'done').length;
-
-        countTodoEl.textContent = todo;
-        countProgressEl.textContent = progress;
-        countDoneEl.textContent = done;
-
-        statTotalEl.textContent = total;
-        statPendingEl.textContent = todo + progress;
-
-        const percentage = total === 0 ? 0 : Math.round((done / total) * 100);
-        completionPercentageEl.textContent = `${percentage}%`;
-
-        // Update progress ring
-        if (progressCircle) {
-            const radius = progressCircle.r.baseVal.value;
-            const circumference = radius * 2 * Math.PI;
-            const offset = circumference - (percentage / 100) * circumference;
-            progressCircle.style.strokeDashoffset = offset;
+        var total = tasks.length;
+        var doneCount = 0;
+        var activeCount = 0;
+        for (var i = 0; i < tasks.length; i++) {
+            if (tasks[i].status === 'done') doneCount++;
+            else activeCount++;
         }
+        statTotalEl.textContent = total;
+        statPendingEl.textContent = activeCount;
+
+        var percent = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+        completionPercentageEl.textContent = percent + '%';
+        updateProgressRing(percent);
     }
 
-    // Generate HTML for a task card
-    function createTaskCard(task) {
-        const card = document.createElement('div');
-        card.className = `task-card ${task.status === 'done' ? 'completed' : ''}`;
+    // check if a task passes the date filter
+    function passesDateFilter(task) {
+        if (currentDateFilter === 'all') return true;
+        if (!task.dueDate) return false;
+
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var due = new Date(task.dueDate + 'T00:00:00');
+
+        if (currentDateFilter === 'today') {
+            return due.toDateString() === today.toDateString();
+        }
+        if (currentDateFilter === 'week') {
+            var weekEnd = new Date(today);
+            weekEnd.setDate(today.getDate() + 7);
+            return due >= today && due <= weekEnd;
+        }
+        if (currentDateFilter === 'overdue') {
+            return due < today && task.status !== 'done';
+        }
+        return true;
+    }
+
+    // check if a task matches search
+    function passesSearch(task) {
+        if (!currentSearch) return true;
+        var q = currentSearch.toLowerCase();
+        return task.title.toLowerCase().includes(q) ||
+               (task.description && task.description.toLowerCase().includes(q));
+    }
+
+    // check category filter
+    function passesCategory(task) {
+        if (currentCategory === 'all') return true;
+        return task.category === currentCategory;
+    }
+
+    // format due date string for display
+    function formatDue(dateStr) {
+        if (!dateStr) return '';
+        var d = new Date(dateStr + 'T00:00:00');
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return months[d.getMonth()] + ' ' + d.getDate();
+    }
+
+    // check if a task is overdue
+    function isOverdue(task) {
+        if (!task.dueDate || task.status === 'done') return false;
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        var due = new Date(task.dueDate + 'T00:00:00');
+        return due < today;
+    }
+
+    // category emoji helper
+    function getCategoryEmoji(cat) {
+        var map = { study: '📚', assignment: '📝', personal: '🏠', health: '❤️' };
+        return map[cat] || '📋';
+    }
+
+    // build and return a task card element
+    function makeTaskCard(task) {
+        var card = document.createElement('div');
+        card.className = 'task-card' + (task.status === 'done' ? ' completed' : '');
         card.setAttribute('data-id', task.id);
-        
-        // Priority color class
-        const priorityClass = `priority-${task.priority}`;
-        
-        // Category Icon selection
-        let categoryIcon = 'layers';
-        if (task.category === 'work') categoryIcon = 'briefcase';
-        else if (task.category === 'personal') categoryIcon = 'user';
-        else if (task.category === 'shopping') categoryIcon = 'shopping-bag';
-        else if (task.category === 'health') categoryIcon = 'heart';
 
-        // Format Date
-        let dateHtml = '';
-        if (task.dueDate) {
-            const dateObj = new Date(task.dueDate);
-            const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            dateHtml = `
-                <div class="task-meta-item">
-                    <i data-lucide="calendar"></i>
-                    <span>${formattedDate}</span>
-                </div>
-            `;
-        }
-
-        // Action icons depending on status
-        let progressActionBtn = '';
+        // figure out the action button for changing status
+        var statusBtn = '';
         if (task.status === 'todo') {
-            progressActionBtn = `
-                <button class="task-action-btn btn-complete" onclick="changeTaskStatus('${task.id}', 'in-progress')" title="Start Progress">
-                    <i data-lucide="play"></i>
-                </button>
-            `;
+            statusBtn = '<button class="task-act-btn" onclick="moveTask(\'' + task.id + '\', \'in-progress\')" title="Start">▶</button>';
         } else if (task.status === 'in-progress') {
-            progressActionBtn = `
-                <button class="task-action-btn btn-complete" onclick="changeTaskStatus('${task.id}', 'done')" title="Complete Task">
-                    <i data-lucide="check"></i>
-                </button>
-            `;
-        } else if (task.status === 'done') {
-            progressActionBtn = `
-                <button class="task-action-btn btn-complete" onclick="changeTaskStatus('${task.id}', 'todo')" title="Reopen Task">
-                    <i data-lucide="rotate-ccw"></i>
-                </button>
-            `;
+            statusBtn = '<button class="task-act-btn" onclick="moveTask(\'' + task.id + '\', \'done\')" title="Mark done">✔</button>';
+        } else {
+            statusBtn = '<button class="task-act-btn" onclick="moveTask(\'' + task.id + '\', \'todo\')" title="Reopen">↩</button>';
         }
 
-        card.innerHTML = `
-            <div class="task-card-header">
-                <h3 class="task-card-title">${escapeHTML(task.title)}</h3>
-                <span class="task-priority-badge ${priorityClass}">${task.priority}</span>
-            </div>
-            ${task.description ? `<p class="task-desc">${escapeHTML(task.description)}</p>` : ''}
-            <div class="task-card-footer">
-                <div class="task-meta">
-                    <div class="task-meta-item">
-                        <i data-lucide="${categoryIcon}"></i>
-                        <span style="text-transform: capitalize;">${task.category}</span>
-                    </div>
-                    ${dateHtml}
-                </div>
-                <div class="task-card-actions">
-                    ${progressActionBtn}
-                    <button class="task-action-btn btn-edit" onclick="openEditModal('${task.id}')" title="Edit Task">
-                        <i data-lucide="edit-3"></i>
-                    </button>
-                    <button class="task-action-btn btn-delete" onclick="deleteTask('${task.id}')" title="Delete Task">
-                        <i data-lucide="trash-2"></i>
-                    </button>
-                </div>
-            </div>
-        `;
+        var duePart = '';
+        if (task.dueDate) {
+            var overdueClass = isOverdue(task) ? ' overdue' : '';
+            var overdueLabel = isOverdue(task) ? ' ⚠' : '';
+            duePart = '<span class="task-due' + overdueClass + '">📅 ' + formatDue(task.dueDate) + overdueLabel + '</span>';
+        }
+
+        card.innerHTML = [
+            '<div class="task-card-header">',
+            '  <span class="task-card-title">' + escapeHtml(task.title) + '</span>',
+            '  <span class="priority-badge priority-' + task.priority + '">' + task.priority + '</span>',
+            '</div>',
+            task.description ? '<p class="task-desc-text">' + escapeHtml(task.description) + '</p>' : '',
+            '<div class="task-meta">',
+            '  <div class="task-meta-left">',
+            '    <span>' + getCategoryEmoji(task.category) + ' ' + task.category + '</span>',
+            duePart,
+            '  </div>',
+            '  <div class="task-actions">',
+            statusBtn,
+            '    <button class="task-act-btn" onclick="editTask(\'' + task.id + '\')" title="Edit">✏️</button>',
+            '    <button class="task-act-btn" onclick="deleteTask(\'' + task.id + '\')" title="Delete">🗑️</button>',
+            '  </div>',
+            '</div>'
+        ].join('');
 
         return card;
     }
 
-    // Escape raw HTML strings for security
-    function escapeHTML(str) {
-        return str.replace(/[&<>'"]/g, 
-            tag => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                "'": '&#39;',
-                '"': '&quot;'
-            }[tag] || tag)
-        );
+    // simple html escape to avoid XSS
+    function escapeHtml(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 
-    // Render workspace board columns
+    // render everything on the board
     function renderBoard() {
         listTodo.innerHTML = '';
         listInProgress.innerHTML = '';
         listDone.innerHTML = '';
 
-        const filteredTasks = tasks.filter(task => {
-            const matchesCategory = currentFilter === 'all' || task.category === currentFilter;
-            const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                  task.description.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesCategory && matchesSearch;
-        });
+        var todoCnt = 0, progressCnt = 0, doneCnt = 0;
 
-        filteredTasks.forEach(task => {
-            const card = createTaskCard(task);
-            if (task.status === 'todo') {
+        for (var i = 0; i < tasks.length; i++) {
+            var t = tasks[i];
+            if (!passesCategory(t) || !passesSearch(t) || !passesDateFilter(t)) continue;
+
+            var card = makeTaskCard(t);
+
+            if (t.status === 'todo') {
                 listTodo.appendChild(card);
-            } else if (task.status === 'in-progress') {
+                todoCnt++;
+            } else if (t.status === 'in-progress') {
                 listInProgress.appendChild(card);
-            } else if (task.status === 'done') {
+                progressCnt++;
+            } else if (t.status === 'done') {
                 listDone.appendChild(card);
+                doneCnt++;
             }
-        });
+        }
 
-        // Initialize Lucide Icons for dynamic content
-        lucide.createIcons();
+        // empty state messages
+        if (todoCnt === 0) {
+            var emptyTodo = document.createElement('div');
+            emptyTodo.className = 'empty-state';
+            emptyTodo.textContent = 'No tasks here — add your first one 👆';
+            listTodo.appendChild(emptyTodo);
+        }
+        if (progressCnt === 0) {
+            var emptyProg = document.createElement('div');
+            emptyProg.className = 'empty-state';
+            emptyProg.textContent = 'Nothing in progress yet';
+            listInProgress.appendChild(emptyProg);
+        }
+        if (doneCnt === 0) {
+            var emptyDone = document.createElement('div');
+            emptyDone.className = 'empty-state';
+            emptyDone.textContent = 'Completed tasks show up here ✅';
+            listDone.appendChild(emptyDone);
+        }
+
+        countTodoEl.textContent = todoCnt;
+        countProgressEl.textContent = progressCnt;
+        countDoneEl.textContent = doneCnt;
+
         updateStats();
     }
 
-    // Status changer
-    window.changeTaskStatus = (id, newStatus) => {
-        tasks = tasks.map(t => t.id === id ? { ...t, status: newStatus } : t);
+    // move a task to a new status
+    window.moveTask = function(id, newStatus) {
+        for (var i = 0; i < tasks.length; i++) {
+            if (tasks[i].id === id) {
+                tasks[i].status = newStatus;
+                break;
+            }
+        }
         saveTasks();
         renderBoard();
     };
 
-    // Delete tasks
-    window.deleteTask = (id) => {
-        tasks = tasks.filter(t => t.id !== id);
+    // delete a task
+    window.deleteTask = function(id) {
+        var filtered = [];
+        for (var i = 0; i < tasks.length; i++) {
+            if (tasks[i].id !== id) filtered.push(tasks[i]);
+        }
+        tasks = filtered;
         saveTasks();
         renderBoard();
     };
 
-    // Open Create Modal
-    addTaskBtn.addEventListener('click', () => {
-        modalTitle.textContent = 'Create Task';
-        taskIdInput.value = '';
-        taskForm.reset();
-        
-        // Set today as default date
-        const today = new Date().toISOString().split('T')[0];
-        taskDueDateInput.value = today;
-        
+    // open edit modal for a specific task
+    window.editTask = function(id) {
+        var task = null;
+        for (var i = 0; i < tasks.length; i++) {
+            if (tasks[i].id === id) { task = tasks[i]; break; }
+        }
+        if (!task) return;
+
+        modalTitle.textContent = 'Edit Task';
+        taskIdInput.value = task.id;
+        taskTitleInput.value = task.title;
+        taskCategorySelect.value = task.category;
+        taskPrioritySelect.value = task.priority;
+        taskDueDateInput.value = task.dueDate || '';
+        taskDescInput.value = task.description || '';
+        openModal();
+    };
+
+    // open / close modal helpers
+    function openModal() {
         taskModal.classList.remove('hidden');
-    });
+        setTimeout(function() { taskTitleInput.focus(); }, 50);
+    }
 
-    // Close Modal helper
     function closeModal() {
         taskModal.classList.add('hidden');
+        taskForm.reset();
+        taskIdInput.value = '';
+        modalTitle.textContent = 'Add Task';
     }
+
+    addTaskBtn.addEventListener('click', function() {
+        var today = new Date().toISOString().split('T')[0];
+        taskDueDateInput.value = today;
+        openModal();
+    });
+
     closeModalBtn.addEventListener('click', closeModal);
     cancelTaskBtn.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', closeModal);
 
-    // Form Submission
-    taskForm.addEventListener('submit', (e) => {
+    // Esc key closes modal
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    // form submit - add or edit task
+    taskForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        const id = taskIdInput.value;
-        const title = taskTitleInput.value.trim();
-        const category = taskCategorySelect.value;
-        const priority = taskPrioritySelect.value;
-        const dueDate = taskDueDateInput.value;
-        const description = taskDescInput.value.trim();
+
+        var id = taskIdInput.value;
+        var title = taskTitleInput.value.trim();
+        if (!title) return;
 
         if (id) {
-            // Edit existing
-            tasks = tasks.map(t => t.id === id ? { ...t, title, category, priority, dueDate, description } : t);
+            // editing existing task
+            for (var i = 0; i < tasks.length; i++) {
+                if (tasks[i].id === id) {
+                    tasks[i].title = title;
+                    tasks[i].category = taskCategorySelect.value;
+                    tasks[i].priority = taskPrioritySelect.value;
+                    tasks[i].dueDate = taskDueDateInput.value;
+                    tasks[i].description = taskDescInput.value.trim();
+                    break;
+                }
+            }
         } else {
-            // Create new
-            const newTask = {
+            // new task
+            var newTask = {
                 id: Date.now().toString(),
-                title,
-                category,
-                priority,
-                dueDate,
-                description,
+                title: title,
+                category: taskCategorySelect.value,
+                priority: taskPrioritySelect.value,
+                dueDate: taskDueDateInput.value,
+                description: taskDescInput.value.trim(),
                 status: 'todo'
             };
             tasks.push(newTask);
@@ -431,39 +377,28 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModal();
     });
 
-    // Open Edit Modal
-    window.openEditModal = (id) => {
-        const task = tasks.find(t => t.id === id);
-        if (!task) return;
-
-        modalTitle.textContent = 'Edit Task';
-        taskIdInput.value = task.id;
-        taskTitleInput.value = task.title;
-        taskCategorySelect.value = task.category;
-        taskPrioritySelect.value = task.priority;
-        taskDueDateInput.value = task.dueDate || '';
-        taskDescInput.value = task.description || '';
-
-        taskModal.classList.remove('hidden');
-    };
-
-    // Search input handler
-    searchInput.addEventListener('input', (e) => {
-        searchQuery = e.target.value;
+    // search input
+    searchInput.addEventListener('input', function() {
+        currentSearch = this.value.trim();
         renderBoard();
     });
 
-    // Filter toggle handler
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            const button = e.target.closest('.filter-btn');
-            button.classList.add('active');
-            currentFilter = button.getAttribute('data-filter');
+    // category filter buttons
+    filterButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            filterButtons.forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            currentCategory = btn.getAttribute('data-filter');
             renderBoard();
         });
     });
 
-    // Initial load
+    // date filter dropdown
+    dateFilterSelect.addEventListener('change', function() {
+        currentDateFilter = this.value;
+        renderBoard();
+    });
+
+    // initial render
     renderBoard();
 });
