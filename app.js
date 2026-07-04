@@ -43,88 +43,145 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const filterButtons = document.querySelectorAll('.filter-btn');
 
-    // Canvas Particle System
-    const canvas = document.getElementById('splash-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    const colors = ['#6366f1', '#a855f7', '#38bdf8', '#c084fc', '#818cf8'];
+    // Canvas Background & Click Animation (Student style)
+    var canvas = document.getElementById('splash-canvas');
+    var ctx = canvas.getContext('2d');
+    var particles = [];
+    var backgroundDots = [];
+    var colors = ['#6366f1', '#a855f7', '#38bdf8', '#c084fc', '#818cf8'];
 
-    function resizeCanvas() {
+    // Resize canvas
+    function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    resize();
+    window.addEventListener('resize', resize);
 
-    class Particle {
-        constructor(x, y, color, size, vx, vy) {
-            this.x = x;
-            this.y = y;
-            this.color = color;
-            this.size = size || Math.random() * 3 + 1.5;
-            this.vx = vx || (Math.random() - 0.5) * 4;
-            this.vy = vy || (Math.random() - 0.5) * 4;
-            this.alpha = 1;
-            this.decay = Math.random() * 0.02 + 0.015;
-        }
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            this.vx *= 0.97;
-            this.vy *= 0.97;
-            this.alpha -= this.decay;
-        }
-        draw() {
-            ctx.save();
-            ctx.globalAlpha = this.alpha;
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = this.color;
-            ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-        }
-    }
-
-    function createBurst(x, y, count = 30) {
-        for (let i = 0; i < count; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 5 + 1.5;
-            const vx = Math.cos(angle) * speed;
-            const vy = Math.sin(angle) * speed;
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const size = Math.random() * 2 + 1.5;
-            particles.push(new Particle(x, y, color, size, vx, vy));
-        }
-    }
-
-    function animateParticles() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles = particles.filter(p => p.alpha > 0);
-        particles.forEach(p => {
-            p.update();
-            p.draw();
+    // Populate some moving background stars/dots initially
+    for (var i = 0; i < 40; i++) {
+        backgroundDots.push({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            size: Math.random() * 2 + 1,
+            speedY: -(Math.random() * 0.5 + 0.2),
+            alpha: Math.random() * 0.5 + 0.2
         });
-        requestAnimationFrame(animateParticles);
     }
-    animateParticles();
 
-    // Listeners for Particle Bursts
-    splashScreen.addEventListener('mousedown', (e) => {
-        createBurst(e.clientX, e.clientY, 25);
+    // Function to draw and move everything
+    function drawSplash() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw background moving stars
+        for (var i = 0; i < backgroundDots.length; i++) {
+            var dot = backgroundDots[i];
+            dot.y += dot.speedY;
+            if (dot.y < 0) {
+                dot.y = canvas.height;
+                dot.x = Math.random() * canvas.width;
+            }
+            ctx.fillStyle = 'rgba(168, 85, 247, ' + dot.alpha + ')';
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw and update explosion particles
+        for (var j = 0; j < particles.length; j++) {
+            var p = particles[j];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.alpha -= 0.02; // fade out
+            
+            if (p.alpha > 0) {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0; // reset
+            }
+        }
+
+        // Filter out dead particles
+        particles = particles.filter(function(item) {
+            return item.alpha > 0;
+        });
+
+        requestAnimationFrame(drawSplash);
+    }
+    drawSplash();
+
+    // Spawn particle burst function
+    function doBurst(x, y) {
+        for (var i = 0; i < 30; i++) {
+            var angle = Math.random() * Math.PI * 2;
+            var speed = Math.random() * 4 + 1;
+            particles.push({
+                x: x,
+                y: y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: Math.random() * 3 + 1,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                alpha: 1.0
+            });
+        }
+    }
+
+    // Single trigger to enter workspace (with animation fadeout)
+    var isEntering = false;
+    function enterWorkspace(clickX, clickY) {
+        if (isEntering) return;
+        isEntering = true;
+
+        // If no coordinates provided, use screen center
+        var targetX = clickX || window.innerWidth / 2;
+        var targetY = clickY || window.innerHeight / 2;
+
+        // Trigger explosion
+        doBurst(targetX, targetY);
+
+        // Hide enter button area
+        var splashAction = document.querySelector('.splash-action');
+        if (splashAction) {
+            splashAction.classList.add('hidden');
+        }
+
+        // Wait a split second, then fade out the splash screen and show dashboard
+        setTimeout(function() {
+            splashScreen.classList.add('fade-out');
+            appContainer.classList.remove('hidden');
+            setTimeout(function() {
+                splashScreen.style.display = 'none';
+            }, 600);
+        }, 500);
+    }
+
+    // Click anywhere on splash screen to trigger animation and enter
+    splashScreen.addEventListener('mousedown', function(e) {
+        enterWorkspace(e.clientX, e.clientY);
     });
 
-    const logoContainer = document.getElementById('logo-container');
+    // Logo click (specifically runs animation)
+    var logoContainer = document.getElementById('logo-container');
     if (logoContainer) {
-        logoContainer.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const rect = logoContainer.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            createBurst(centerX, centerY, 55);
+        logoContainer.addEventListener('click', function(e) {
+            e.stopPropagation(); // prevent double trigger
+            var rect = logoContainer.getBoundingClientRect();
+            var cx = rect.left + rect.width / 2;
+            var cy = rect.top + rect.height / 2;
+            enterWorkspace(cx, cy);
         });
     }
+
+    // Enter key press triggers workspace entry
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            enterWorkspace();
+        }
+    });
 
     // App State
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
@@ -138,11 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
         progressCircle.style.strokeDashoffset = circumference;
     }
-
-    const splashAction = document.querySelector('.splash-action');
-    const splashLoaderContainer = document.getElementById('splash-loader-container');
-    const loaderStatus = document.getElementById('loader-status');
-    const loaderBar = document.getElementById('loader-bar');
 
     // Set greeting and date
     function updateHeaderInfo() {
@@ -158,56 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
         currentDateEl.textContent = now.toLocaleDateString('en-US', options);
     }
     updateHeaderInfo();
-
-    // Splash Screen Transition Trigger
-    let isEntering = false;
-    function enterWorkspace() {
-        if (isEntering || splashScreen.classList.contains('fade-out')) return;
-        isEntering = true;
-
-        // Hide buttons, show loader
-        splashAction.classList.add('hidden');
-        splashLoaderContainer.classList.remove('hidden');
-
-        let progress = 0;
-        const statuses = [
-            { limit: 25, text: 'Syncing workspace...' },
-            { limit: 55, text: 'Optimizing board columns...' },
-            { limit: 85, text: 'Retrieving saved tasks...' },
-            { limit: 100, text: 'Ready! Launching...' }
-        ];
-
-        const interval = setInterval(() => {
-            progress += Math.floor(Math.random() * 8) + 4;
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(interval);
-                
-                // Finalize entry
-                loaderBar.style.width = '100%';
-                loaderStatus.textContent = statuses[3].text;
-                
-                setTimeout(() => {
-                    splashScreen.classList.add('fade-out');
-                    appContainer.classList.remove('hidden');
-                    setTimeout(() => {
-                        splashScreen.style.display = 'none';
-                    }, 600);
-                }, 400);
-            } else {
-                loaderBar.style.width = `${progress}%`;
-                const currentStatus = statuses.find(s => progress <= s.limit) || statuses[2];
-                loaderStatus.textContent = currentStatus.text;
-            }
-        }, 80);
-    }
-
-    enterBtn.addEventListener('click', enterWorkspace);
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            enterWorkspace();
-        }
-    });
 
     // Save tasks to local storage
     function saveTasks() {
