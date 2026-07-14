@@ -2,7 +2,7 @@
 
 A client-side task management board built using clean, vanilla JavaScript, CSS, and HTML. TaskFlow is designed as a lightweight, zero-dependency Kanban board that runs entirely in the browser, storing data locally via the Web Storage API (`localStorage`).
 
-**Live site:** [saatvik-g.github.io/Task-Tracker](https://saatvik-g.github.io/Task-Tracker/)
+**Live site:** [task-tracker-umber-three.vercel.app](https://task-tracker-umber-three.vercel.app/)
 
 ---
 
@@ -13,7 +13,7 @@ A client-side task management board built using clean, vanilla JavaScript, CSS, 
 >
 > The core technical decisions: I used vanilla JavaScript with no frameworks, which let me keep the project at three files (HTML, CSS, JS) with zero build step. Data persistence uses the browser's localStorage API — tasks are serialized as JSON and re-parsed on page load. The rendering approach is a simple "clear and rebuild" cycle: every time the task array changes, I wipe the column DOM and rebuild all task cards from the array. This is intentionally naive — for a few dozen tasks the performance is fine, and it avoids the complexity of a virtual DOM diffing system.
 >
-> The main tradeoff I chose was localStorage over a backend database. This means the app works instantly with no server, no auth, and no hosting cost beyond GitHub Pages — but tasks don't sync across devices. For a personal task tracker that's an acceptable limitation, and I documented it clearly in the README.
+> The main tradeoff I chose was localStorage over a backend database. This means the app works instantly with no server, no auth, and no hosting cost beyond static hosts like Vercel or GitHub Pages — but tasks don't sync across devices. For a personal task tracker that's an acceptable limitation, and I documented it clearly in the README.
 
 ---
 
@@ -49,7 +49,7 @@ graph TD
 - **HTML5** — Semantic markup, inline SVGs for rendering resolution-independent vector icons.
 - **CSS3 Custom variables** — A custom design system built around a slate-purple theme using native CSS variables (`--primary`, `--bg`, etc.) and CSS transitions for micro-animations (card hover transitions, modals).
 - **Vanilla JavaScript (ES5/ES6 compatibility)** — No transpilation, babel, or bundlers.
-- **Hosting** — GitHub Pages (static site hosting).
+- **Hosting** — Vercel / GitHub Pages (static site hosting).
 
 ---
 
