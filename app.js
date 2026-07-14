@@ -291,6 +291,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 .replace(/"/g, '&quot;');
         }
 
+        function sanitizePriority(p) {
+            var valid = ['low', 'medium', 'high'];
+            return valid.indexOf(p) !== -1 ? p : 'medium';
+        }
+
 
         // =============================================
         //  FILTER LOGIC
@@ -350,11 +355,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // done → "Reopen" (move back to todo)
             var moveBtn = '';
             if (task.status === 'todo') {
-                moveBtn = '<button class="task-act-btn" data-action="move" data-id="' + task.id + '" data-to="in-progress" title="Start">▶</button>';
+                moveBtn = '<button class="task-act-btn" data-action="move" data-id="' + task.id + '" data-to="in-progress" title="Start" aria-label="Start">▶</button>';
             } else if (task.status === 'in-progress') {
-                moveBtn = '<button class="task-act-btn" data-action="move" data-id="' + task.id + '" data-to="done" title="Done">✔</button>';
+                moveBtn = '<button class="task-act-btn" data-action="move" data-id="' + task.id + '" data-to="done" title="Done" aria-label="Done">✔</button>';
             } else {
-                moveBtn = '<button class="task-act-btn" data-action="move" data-id="' + task.id + '" data-to="todo" title="Reopen">↩</button>';
+                moveBtn = '<button class="task-act-btn" data-action="move" data-id="' + task.id + '" data-to="todo" title="Reopen" aria-label="Reopen">↩</button>';
             }
 
             // Due date display with overdue warning
@@ -368,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
             card.innerHTML = [
                 '<div class="task-card-header">',
                 '  <span class="task-card-title">' + escapeHtml(task.title) + '</span>',
-                '  <span class="priority-badge priority-' + task.priority + '">' + escapeHtml(task.priority) + '</span>',
+                '  <span class="priority-badge priority-' + sanitizePriority(task.priority) + '">' + escapeHtml(sanitizePriority(task.priority)) + '</span>',
                 '</div>',
                 task.description ? '<p class="task-desc-text">' + escapeHtml(task.description) + '</p>' : '',
                 '<div class="task-meta">',
@@ -378,8 +383,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 '  </div>',
                 '  <div class="task-actions">',
                 moveBtn,
-                '    <button class="task-act-btn" data-action="edit" data-id="' + task.id + '" title="Edit">✏️</button>',
-                '    <button class="task-act-btn" data-action="delete" data-id="' + task.id + '" title="Delete">🗑️</button>',
+                '    <button class="task-act-btn" data-action="edit" data-id="' + task.id + '" title="Edit" aria-label="Edit task">✏️</button>',
+                '    <button class="task-act-btn" data-action="delete" data-id="' + task.id + '" title="Delete" aria-label="Delete task">🗑️</button>',
                 '  </div>',
                 '</div>'
             ].join('');
