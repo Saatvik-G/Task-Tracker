@@ -14,7 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var welcomeNameInput = document.getElementById('welcome-name');
     var welcomeGoBtn = document.getElementById('welcome-go-btn');
 
-    var savedName = localStorage.getItem('taskflow_username');
+    var savedName;
+    try {
+        savedName = localStorage.getItem('taskflow_username');
+    } catch (e) {
+        savedName = null;
+    }
 
     if (savedName) {
         welcomeScreen.style.display = 'none';
@@ -171,8 +176,9 @@ document.addEventListener('DOMContentLoaded', function() {
             var valid = [];
             for (var i = 0; i < raw.length; i++) {
                 var t = raw[i];
-                // Each task must have at minimum an id, title, and status
-                if (t && typeof t.id === 'string' && typeof t.title === 'string' && typeof t.status === 'string') {
+                // Each task must have an id, title, status, category, priority, and dueDate (all as strings)
+                if (t && typeof t.id === 'string' && typeof t.title === 'string' && typeof t.status === 'string' &&
+                    typeof t.category === 'string' && typeof t.priority === 'string' && typeof t.dueDate === 'string') {
                     valid.push(t);
                 }
             }
@@ -476,6 +482,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 openModal();
             }
             else if (action === 'delete') {
+                if (!confirm('Delete this task?')) return;
                 var remaining = [];
                 for (var i = 0; i < tasks.length; i++) {
                     if (tasks[i].id !== id) remaining.push(tasks[i]);
