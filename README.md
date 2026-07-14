@@ -88,6 +88,6 @@ npx serve .
 
 ## 6. Project Context
 
-Built as part of the Web Technology internship project, July 2026.
+Submitted as part of my internship at Altruist Technologies Pvt Limited, June- July 2026.
 
 **Built by Saatvik Gupta** — [GitHub](https://github.com/Saatvik-G)
